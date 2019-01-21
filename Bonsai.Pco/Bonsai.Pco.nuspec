@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://bitbucket.org/horizongir/bonsai.pco/raw/c07d00247642b16bac0138198aef0d7d4a6d810b/LICENSE</licenseUrl>
+    <projectUrl>https://bitbucket.org/horizongir/bonsai.pco</projectUrl>
+    <iconUrl>https://bitbucket.org/horizongir/bonsai/raw/7aacc64dc4647e57362ab310238591dc197fef0d/Resources/Bonsai.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <copyright>$author$ © 2019</copyright>
+    <tags>Bonsai PCO</tags>
+  </metadata>
+</package>
