@@ -17,6 +17,8 @@ namespace Bonsai.Pco
 
         public TriggerMode TriggerMode { get; set; }
 
+        public TimestampMode TimestampMode { get; set; }
+
         public override IObservable<IplImage> Generate()
         {
             return Observable.Create<IplImage>((observer, cancellationToken) =>
@@ -43,7 +45,12 @@ namespace Bonsai.Pco
                         error = PCO_SDK_LibWrapper.PCO_GetCameraHealthStatus(cameraHandle, ref dwWarn, ref dwError, ref dwStatus);
                         ThrowExceptionForErrorCode(error);
 
-                        PCO_SDK_LibWrapper.PCO_SetTriggerMode(cameraHandle, (ushort)TriggerMode);
+                        error = PCO_SDK_LibWrapper.PCO_SetTimestampMode(cameraHandle, (ushort)TimestampMode);
+                        ThrowExceptionForErrorCode(error);
+
+                        error = PCO_SDK_LibWrapper.PCO_SetTriggerMode(cameraHandle, (ushort)TriggerMode);
+                        ThrowExceptionForErrorCode(error);
+
                         error = PCO_SDK_LibWrapper.PCO_ArmCamera(cameraHandle);
                         ThrowExceptionForErrorCode(error);
 
