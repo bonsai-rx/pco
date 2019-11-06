@@ -13,4 +13,12 @@ namespace Bonsai.Pco
         ExternalTrigger = 2,
         ExposureControl = 3
     }
+
+    public enum TimestampMode : ushort
+    {
+        None = 0,
+        Binary = 1,
+        BinaryAscii = 2,
+        Ascii = 3
+    }
 }
