@@ -13,6 +13,10 @@ namespace Bonsai.Pco
 {
     public class PcoCapture : Source<IplImage>
     {
+        public int Index { get; set; }
+
+        public TriggerMode TriggerMode { get; set; }
+
         public override IObservable<IplImage> Generate()
         {
             return Observable.Create<IplImage>((observer, cancellationToken) =>
@@ -20,10 +24,9 @@ namespace Bonsai.Pco
                 return Task.Factory.StartNew(() =>
                 {
                     short bufnr = -1;
-                    ushort boardNum = 0;
                     var cameraHandle = IntPtr.Zero;
                     var convertHandle = IntPtr.Zero;
-                    var error = PCO_SDK_LibWrapper.PCO_OpenCamera(ref cameraHandle, boardNum);
+                    var error = PCO_SDK_LibWrapper.PCO_OpenCamera(ref cameraHandle, (ushort)Index);
                     ThrowExceptionForErrorCode(error);
                     try
                     {
@@ -40,7 +43,7 @@ namespace Bonsai.Pco
                         error = PCO_SDK_LibWrapper.PCO_GetCameraHealthStatus(cameraHandle, ref dwWarn, ref dwError, ref dwStatus);
                         ThrowExceptionForErrorCode(error);
 
-                        PCO_SDK_LibWrapper.PCO_SetTriggerMode(cameraHandle, 0);
+                        PCO_SDK_LibWrapper.PCO_SetTriggerMode(cameraHandle, (ushort)TriggerMode);
                         error = PCO_SDK_LibWrapper.PCO_ArmCamera(cameraHandle);
                         ThrowExceptionForErrorCode(error);
 
@@ -49,8 +52,8 @@ namespace Bonsai.Pco
                         error = PCO_SDK_LibWrapper.PCO_GetCameraDescription(cameraHandle, ref pcoDescr);
                         ThrowExceptionForErrorCode(error);
 
-                        PCO_ConvertStructures.PCO_SensorInfo strsensorinf = new PCO_ConvertStructures.PCO_SensorInfo();
-                        PCO_ConvertStructures.PCO_Display strDisplay = new PCO_ConvertStructures.PCO_Display();
+                        var strsensorinf = new PCO_ConvertStructures.PCO_SensorInfo();
+                        var strDisplay = new PCO_ConvertStructures.PCO_Display();
                         strsensorinf.wSize = (ushort)Marshal.SizeOf(strsensorinf);
                         strDisplay.wSize = (ushort)Marshal.SizeOf(strDisplay);
                         strsensorinf.wDummy = 0;

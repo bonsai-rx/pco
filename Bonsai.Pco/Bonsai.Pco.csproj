@@ -68,6 +68,7 @@
     <Compile Include="PCO_GetErrorTextClass.cs" />
     <Compile Include="PCO_SDK.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Types.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Bonsai.Pco.nuspec" />
