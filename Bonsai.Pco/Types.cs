@@ -6,6 +6,13 @@ using System.Threading.Tasks;
 
 namespace Bonsai.Pco
 {
+    public enum AcquireMode : ushort
+    {
+        Auto = 0,
+        External = 1,
+        ExternalModulate = 2
+    }
+
     public enum TriggerMode : ushort
     {
         AutoTrigger = 0,
