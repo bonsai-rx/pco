@@ -332,6 +332,9 @@ namespace Bonsai.Pco
         public static extern int PCO_GetCameraName(IntPtr pHandle, byte[] szCameraName, ushort wSZCameraNameLen);
 
         [DllImport(Sc2Cam, CallingConvention = CallingConvention.StdCall)]
+        public static extern int PCO_SetAcquireMode(IntPtr pHandle, ushort wAcquMode);
+
+        [DllImport(Sc2Cam, CallingConvention = CallingConvention.StdCall)]
         public static extern int PCO_SetTriggerMode(IntPtr pHandle, ushort wTriggerMode);
 
         [DllImport(Sc2Cam, CallingConvention = CallingConvention.StdCall)]

@@ -15,6 +15,8 @@ namespace Bonsai.Pco
     {
         public int Index { get; set; }
 
+        public AcquireMode AcquireMode { get; set; }
+
         public TriggerMode TriggerMode { get; set; }
 
         public TimestampMode TimestampMode { get; set; }
@@ -49,6 +51,9 @@ namespace Bonsai.Pco
                         ThrowExceptionForErrorCode(error);
 
                         error = PCO_SDK_LibWrapper.PCO_SetTriggerMode(cameraHandle, (ushort)TriggerMode);
+                        ThrowExceptionForErrorCode(error);
+
+                        error = PCO_SDK_LibWrapper.PCO_SetAcquireMode(cameraHandle, (ushort)AcquireMode);
                         ThrowExceptionForErrorCode(error);
 
                         error = PCO_SDK_LibWrapper.PCO_ArmCamera(cameraHandle);
