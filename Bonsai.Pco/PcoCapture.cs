@@ -2,6 +2,7 @@
 using OpenCV.Net;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
@@ -11,14 +12,19 @@ using System.Threading.Tasks;
 
 namespace Bonsai.Pco
 {
+    [Description("Acquires a sequence of images from a PCO camera.")]
     public class PcoCapture : Source<PcoDataFrame>
     {
+        [Description("The index of the camera from which to acquire images.")]
         public int Index { get; set; }
 
+        [Description("Specifies the acquisition control mode of the camera.")]
         public AcquireMode AcquireMode { get; set; }
 
+        [Description("Specifies the trigger mode of the camera.")]
         public TriggerMode TriggerMode { get; set; }
 
+        [Description("Specifies whether to include timestamp information in image metadata.")]
         public TimestampMode TimestampMode { get; set; }
 
         public override IObservable<PcoDataFrame> Generate()
