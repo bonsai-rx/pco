@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Bonsai.Pco
 {
-    public class PcoCapture : Source<IplImage>
+    public class PcoCapture : Source<PcoDataFrame>
     {
         public int Index { get; set; }
 
@@ -21,9 +21,9 @@ namespace Bonsai.Pco
 
         public TimestampMode TimestampMode { get; set; }
 
-        public override IObservable<IplImage> Generate()
+        public override IObservable<PcoDataFrame> Generate()
         {
-            return Observable.Create<IplImage>((observer, cancellationToken) =>
+            return Observable.Create<PcoDataFrame>((observer, cancellationToken) =>
             {
                 return Task.Factory.StartNew(() =>
                 {
@@ -46,7 +46,8 @@ namespace Bonsai.Pco
                         error = PCO_SDK_LibWrapper.PCO_GetCameraHealthStatus(cameraHandle, ref dwWarn, ref dwError, ref dwStatus);
                         ThrowExceptionForErrorCode(error);
 
-                        error = PCO_SDK_LibWrapper.PCO_SetTimestampMode(cameraHandle, (ushort)TimestampMode);
+                        var timestampMode = TimestampMode;
+                        error = PCO_SDK_LibWrapper.PCO_SetTimestampMode(cameraHandle, (ushort)timestampMode);
                         ThrowExceptionForErrorCode(error);
 
                         error = PCO_SDK_LibWrapper.PCO_SetTriggerMode(cameraHandle, (ushort)TriggerMode);
@@ -95,7 +96,27 @@ namespace Bonsai.Pco
                             if (!imageReceived) continue;
                             unsafe
                             {
+                                PcoDataFrame result;
                                 Int16* bufi = (Int16*)buf.ToPointer();
+                                if ((timestampMode & Pco.TimestampMode.Binary) != Pco.TimestampMode.None)
+                                {
+                                    result.Counter = FromPackedBcd(bufi[0], bufi[1], bufi[2], bufi[3]);
+                                    result.Timestamp = new DateTimeOffset(
+                                        FromPackedBcd(bufi[4], bufi[5]), // year
+                                        FromPackedBcd(bufi[6]), // month
+                                        FromPackedBcd(bufi[7]), // day
+                                        FromPackedBcd(bufi[8]), // hour
+                                        FromPackedBcd(bufi[9]), // minutes
+                                        FromPackedBcd(bufi[10]), // seconds
+                                        TimeSpan.Zero).AddTicks( // microseconds
+                                        FromPackedBcd(bufi[11], bufi[12], bufi[13]) * 10);
+                                }
+                                else
+                                {
+                                    result.Counter = 0;
+                                    result.Timestamp = new DateTimeOffset(0, TimeSpan.Zero);
+                                }
+
                                 max = 0;
                                 min = 65535;
                                 for (int i = 20 * width; i < height * width; i++)
@@ -111,7 +132,8 @@ namespace Bonsai.Pco
 
                                 using (var image = new IplImage(new Size(width, height), IplDepth.U16, 1, (IntPtr)buf.ToPointer()))
                                 {
-                                    observer.OnNext(image.Clone());
+                                    result.Image = image.Clone();
+                                    observer.OnNext(result);
                                 }
                             }
                         }
@@ -138,6 +160,50 @@ namespace Bonsai.Pco
                 PCO_SDK_LibWrapper.PCO_ResetLib();
                 throw new InvalidOperationException(message);
             }
+        }
+
+        static int FromPackedBcd(short b0)
+        {
+            var value = 0;
+            value += (byte)(b0 & 0xF) * 1;
+            value += (byte)(b0 >> 04) * 10;
+            return value;
+        }
+
+        static int FromPackedBcd(short b0, short b1)
+        {
+            var value = 0;
+            value += (byte)(b1 & 0xF) * 1;
+            value += (byte)(b1 >> 04) * 10;
+            value += (byte)(b0 & 0xF) * 100;
+            value += (byte)(b0 >> 04) * 1000;
+            return value;
+        }
+
+        static int FromPackedBcd(short b0, short b1, short b2)
+        {
+            var value = 0;
+            value += (byte)(b2 & 0xF) * 1;
+            value += (byte)(b2 >> 04) * 10;
+            value += (byte)(b1 & 0xF) * 100;
+            value += (byte)(b1 >> 04) * 1000;
+            value += (byte)(b0 & 0xF) * 10000;
+            value += (byte)(b0 >> 04) * 100000;
+            return value;
+        }
+
+        static int FromPackedBcd(short b0, short b1, short b2, short b3)
+        {
+            var value = 0;
+            value += (byte)(b3 & 0xF) * 1;
+            value += (byte)(b3 >> 04) * 10;
+            value += (byte)(b2 & 0xF) * 100;
+            value += (byte)(b2 >> 04) * 1000;
+            value += (byte)(b1 & 0xF) * 10000;
+            value += (byte)(b1 >> 04) * 100000;
+            value += (byte)(b0 & 0xF) * 1000000;
+            value += (byte)(b0 >> 04) * 10000000;
+            return value;
         }
 
         class BufferWaitHandle : WaitHandle

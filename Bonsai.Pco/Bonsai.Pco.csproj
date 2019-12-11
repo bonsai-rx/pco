@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PcoCapture.cs" />
+    <Compile Include="PcoDataFrame.cs" />
     <Compile Include="PCO_ConvertStructures.cs" />
     <Compile Include="PCO_ConvertWrapper.cs" />
     <Compile Include="PCO_GetErrorTextClass.cs" />
