@@ -29,7 +29,6 @@ namespace Bonsai.Pco
                 {
                     short bufnr = -1;
                     var cameraHandle = IntPtr.Zero;
-                    var convertHandle = IntPtr.Zero;
                     var error = PCO_SDK_LibWrapper.PCO_OpenCamera(ref cameraHandle, (ushort)Index);
                     ThrowExceptionForErrorCode(error);
                     try
@@ -64,31 +63,6 @@ namespace Bonsai.Pco
                         error = PCO_SDK_LibWrapper.PCO_GetCameraDescription(cameraHandle, ref pcoDescr);
                         ThrowExceptionForErrorCode(error);
 
-                        var strsensorinf = new PCO_ConvertStructures.PCO_SensorInfo();
-                        var strDisplay = new PCO_ConvertStructures.PCO_Display();
-                        strsensorinf.wSize = (ushort)Marshal.SizeOf(strsensorinf);
-                        strDisplay.wSize = (ushort)Marshal.SizeOf(strDisplay);
-                        strsensorinf.wDummy = 0;
-                        strsensorinf.iConversionFactor = 0;
-                        strsensorinf.iDataBits = pcoDescr.wDynResDESC;
-                        strsensorinf.iSensorInfoBits = 1;
-                        strsensorinf.iDarkOffset = 100;
-                        strsensorinf.dwzzDummy0 = 0;
-                        strsensorinf.strColorCoeff.da11 = 1.0;
-                        strsensorinf.strColorCoeff.da12 = 0.0;
-                        strsensorinf.strColorCoeff.da13 = 0.0;
-                        strsensorinf.strColorCoeff.da21 = 0.0;
-                        strsensorinf.strColorCoeff.da22 = 1.0;
-                        strsensorinf.strColorCoeff.da23 = 0.0;
-                        strsensorinf.strColorCoeff.da31 = 0.0;
-                        strsensorinf.strColorCoeff.da32 = 0.0;
-                        strsensorinf.strColorCoeff.da33 = 1.0;
-                        strsensorinf.iCamNum = 0;
-                        strsensorinf.hCamera = cameraHandle;
-
-                        error = PCO_Convert_LibWrapper.PCO_ConvertCreate(ref convertHandle, ref strsensorinf, PCO_Convert_LibWrapper.PCO_COLOR_CONVERT);
-                        ThrowExceptionForErrorCode(error);
-
                         ushort width = 0;
                         ushort height = 0;
                         ushort maxWidth = 0;
@@ -100,14 +74,9 @@ namespace Bonsai.Pco
                         error = PCO_SDK_LibWrapper.PCO_SetRecordingState(cameraHandle, 1);
                         ThrowExceptionForErrorCode(error);
 
-                        int ishift = 16 - pcoDescr.wDynResDESC;
-                        int ipadd = width / 4;
-                        int iconvertcol = pcoDescr.wColorPatternDESC / 0x1000;
                         int max;
                         int min;
-                        ipadd *= 4;
-                        ipadd = width - ipadd;
-                        var imageData = new byte[(width + ipadd) * height * 3];
+                        int ishift = 16 - pcoDescr.wDynResDESC;
                         var size = width * height * 2;
                         var buf = UIntPtr.Zero;
                         var evhandle = IntPtr.Zero;
@@ -139,20 +108,18 @@ namespace Bonsai.Pco
                                 }
                                 if (max <= min)
                                     max = min + 1;
+
+                                using (var image = new IplImage(new Size(width, height), IplDepth.U16, 1, (IntPtr)buf.ToPointer()))
+                                {
+                                    observer.OnNext(image.Clone());
+                                }
                             }
-
-                            error = PCO_Convert_LibWrapper.PCO_Convert16TOCOL(convertHandle, 0, iconvertcol, width, height, buf, imageData);
-                            ThrowExceptionForErrorCode(error);
-
-                            var output = Mat.FromArray(imageData, height, width, Depth.U8, 3);
-                            observer.OnNext(output.GetImage());
                         }
                     }
                     finally
                     {
                         PCO_SDK_LibWrapper.PCO_SetRecordingState(cameraHandle, 0);
                         if (bufnr != -1) PCO_SDK_LibWrapper.PCO_FreeBuffer(cameraHandle, bufnr);
-                        PCO_Convert_LibWrapper.PCO_ConvertDelete(convertHandle);
                         PCO_SDK_LibWrapper.PCO_CloseCamera(cameraHandle);
                     }
                 },
