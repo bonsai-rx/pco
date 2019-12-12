@@ -73,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Bonsai.Pco.nuspec" />
+    <None Include="Bonsai.Pco.targets" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
