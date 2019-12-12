@@ -14,4 +14,8 @@
     <copyright>$author$ © 2019</copyright>
     <tags>Bonsai PCO</tags>
   </metadata>
+  <files>
+    <file src="Bonsai.Pco.targets" target="build\net45"/>
+    <file src="..\Externals\pco.sdk\**\*.dll" target="build\native\bin"/>
+  </files>
 </package>
